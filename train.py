@@ -12,7 +12,7 @@ from model import Model
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, default='data/tinyshakespeare',
+    parser.add_argument('--data_dir', type=str, default='data/hp',
                        help='data directory containing input.txt')
     parser.add_argument('--save_dir', type=str, default='save',
                        help='directory to store checkpointed models')
@@ -36,6 +36,8 @@ def main():
                        help='learning rate')
     parser.add_argument('--decay_rate', type=float, default=0.97,
                        help='decay rate for rmsprop')
+    parser.add_argument('--load_checkpoint', type=bool, default=False,
+                       help='load previous checkpoint from save_dir')
     args = parser.parse_args()
     train(args)
 
@@ -53,6 +55,14 @@ def train(args):
     with tf.Session() as sess:
         tf.initialize_all_variables().run()
         saver = tf.train.Saver(tf.all_variables())
+
+        if args.load_checkpoint:
+          ckpt = tf.train.get_checkpoint_state(args.save_dir)
+          print("loading")
+          if ckpt and ckpt.model_checkpoint_path:
+              print("restoring from", ckpt.model_checkpoint_path)
+              saver.restore(sess, ckpt.model_checkpoint_path)
+
         for e in range(args.num_epochs):
             sess.run(tf.assign(model.lr, args.learning_rate * (args.decay_rate ** e)))
             data_loader.reset_batch_pointer()

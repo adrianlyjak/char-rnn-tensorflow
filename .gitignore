@@ -6,3 +6,5 @@ data
 *.pyc
 .Python
 pip-selfcheck.json
+.idea
+.idea/
